@@ -140,6 +140,12 @@ Widget build(BuildContext context) {
                               "Keterangan: ${cuti['keterangan'] ?? 'N/A'}",
                               style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
                             ),
+                            SizedBox(height: 8),
+                            Text(
+                              "Status: ${cuti['status_cuti'] == null ? 'N/A' : (cuti['status_cuti'] == 1 ? 'Diterima' : 'Belum Diterima')}",
+                              style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                            ),
+
                           ],
                         ),
                       ),

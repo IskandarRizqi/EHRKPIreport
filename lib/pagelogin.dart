@@ -30,6 +30,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    _chekAuth();
     _getAppVersion();
   }
   Future<void> _getAppVersion() async {
@@ -38,6 +39,7 @@ class _LoginPageState extends State<LoginPage> {
       _appVer = packageInfo.version;
     });
   }
+  
 
   // Fungsi login
   void _login() async {
@@ -109,6 +111,7 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
   }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -251,7 +254,56 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+  void _chekAuth() async {
+  setState(() {
+    _isLoading = true;
+  });
+
+  SharedPreferences locStor = await SharedPreferences.getInstance();
+  String? token = locStor.getString('token');
+  print("Token saat startup: $token");
+
+  if (token == null || token.isEmpty) {
+    print("Token kosong, harus login ulang.");
+    setState(() {
+      _isLoading = false;
+    });
+    return;
+  }
+
+  print("Memulai authCheck...");
+  var res = await ApiHandler().authCheck();
+  print("Response dari authCheck: ${res.body}");
+
+  if (res.statusCode == 200) {
+    var body = jsonDecode(res.body);
+    if (body['success']) {
+      locStor.setString('user', jsonEncode(body['user']));
+      print("Autentikasi berhasil, masuk ke HomeScreen...");
+      Get.off(() => HomeScreen(
+        prevPage: '',
+        // infoPop: body['infomessage']?.toString(),
+        alertPop: body['alertmessage']?.toString(),
+      ));
+      return;
+    } else {
+      print("authCheck gagal: ${body['message']}");
+    }
+  } else {
+    print("authCheck gagal, status code: ${res.statusCode}");
+  }
+
+  print("Login manual diperlukan.");
+  _login();
+
+  setState(() {
+    _isLoading = false;
+  });
 }
+
+  }
+
+
 
 
 
@@ -274,4 +326,5 @@ class BackgroundClipper extends CustomClipper<Path> {
   bool shouldReclip(CustomClipper<Path> oldClipper) {
     return false;
   }
+  
 }

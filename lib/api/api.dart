@@ -92,8 +92,8 @@ class ApiHandler {
     await _getappver();
     log('API URL: $apiUrl');
 
-    // final fcmToken = await FirebaseMessaging.instance.getToken();
-    final fcmToken = null;
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    // final fcmToken = null;
 
     var fullUrl = _apiurl + apiUrl + '?fbtoken=' + fcmToken.toString();
     var res = await http
@@ -122,6 +122,44 @@ class ApiHandler {
     }
     return res;
   }
+  authOut({bldctx = null}) async {
+    print('tes authout');
+    EasyLoading.show(status: 'Loading', maskType: EasyLoadingMaskType.black);
+    await _connectionCheck();
+    await _getappver();
+
+    var fullUrl = '$_apiurl/logout';
+    await _getToken();
+    var res = await http
+        .get(Uri.parse(fullUrl), headers: _setHeaders())
+        .onError((error, stackTrace) => http.Response(
+            jsonEncode({'success': false, 'message': error.toString()}), 401))
+        .timeout(Duration(seconds: _deftimout), onTimeout: () {
+      Fluttertoast.showToast(msg: 'Request Timed Out');
+      return http.Response(
+          jsonEncode({'success': false, 'message': 'Request Timed Out'}), 401);
+    });
+    EasyLoading.dismiss();
+    if (res.statusCode == 408) {
+      _changeConMethod(b: bldctx);
+    } else if (res.statusCode == 401) {
+      SharedPreferences locStor = await SharedPreferences.getInstance();
+      locStor.setString('user', '');
+      locStor.setString('token', '');
+      var body = jsonDecode(res.body);
+      if (body is Map) {
+        if (body['message'].toString().contains('Failed host lookup')) {
+          _changeConMethod(b: bldctx);
+        }
+      }
+    }
+    if (res.statusCode == 200) {
+      SharedPreferences locStor = await SharedPreferences.getInstance();
+      locStor.setString('user', '');
+      locStor.setString('token', '');
+      Get.offAll(() => const LoginPage());
+    }
+  }
 
   authCheck({bldctx = null}) async {
     print('tes authcheck');
@@ -129,8 +167,8 @@ class ApiHandler {
     await _connectionCheck();
     await _fakecheck();
     await _getappver();
-    // final fcmToken = await FirebaseMessaging.instance.getToken();
-    final fcmToken = null;
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    // final fcmToken = null;
     var fullUrl = '$_apiurl/auth-check?fbtoken=$fcmToken';
     await _getToken();
     var res = await http

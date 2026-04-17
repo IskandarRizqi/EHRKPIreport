@@ -139,6 +139,26 @@ class _HomeScreenState extends State<HomeScreen> {
     Fluttertoast.showToast(msg: 'Error: $e');
   }
 }
+void _doLogout() async {
+    showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+              title: const Text('Logout'),
+              content: const Text('You will be logged out of this app'),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                    },
+                    child: const Text('Cancel')),
+                TextButton(
+                    onPressed: () async {
+                      var res = await ApiHandler().authOut();
+                    },
+                    child: const Text('Accept')),
+              ],
+            ));
+  }
 
   
   @override
@@ -179,12 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(width: 40),
                           IconButton(
                             icon: const Icon(Icons.logout, color: Colors.white),
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (context) => LoginPage()),
-                              );
-                            },
+                            onPressed: () => _doLogout(),
                           ),
                         ],
                       ),

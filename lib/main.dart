@@ -47,8 +47,8 @@ Future <void> main() async {
   runApp(const MyApp());
 }
 void initializeFirebaseMessaging() async {
-  // final fcmToken = await FirebaseMessaging.instance.getToken();
-  final fcmToken = null;
+  final fcmToken = await FirebaseMessaging.instance.getToken();
+  // final fcmToken = null;
   print("FCM Token: $fcmToken");
 
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
